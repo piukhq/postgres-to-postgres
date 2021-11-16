@@ -1,8 +1,11 @@
 import logging
 import re
+import socket
 import subprocess
+from typing import Optional
 
 import psycopg2
+import redis
 from pydantic import BaseSettings, PostgresDsn
 from pythonjsonlogger import jsonlogger
 
@@ -19,6 +22,8 @@ class Settings(BaseSettings):
     destination_is_single_server: bool = False
     destination_psql_connection_string: PostgresDsn
     shell_check: bool = False
+    leader_election_enabled: bool = False
+    redis_url: Optional[str]
 
 
 settings = Settings()
@@ -68,6 +73,29 @@ source_database = connection_strings["source"]["dbname"]
 logging_extras = ({"database": source_database},)
 
 
+def is_leader(dbname) -> bool:
+    if settings.leader_election_enabled:
+        r = redis.Redis.from_url(settings.redis_url)
+        lock_key = f"postgres-to-postgres-{dbname}"
+        hostname = socket.gethostname()
+        is_leader = False
+
+        with r.pipeline() as pipe:
+            try:
+                pipe.watch(lock_key)
+                leader_host = pipe.get(lock_key)
+                if leader_host in (hostname.encode(), None):
+                    pipe.multi()
+                    pipe.setex(lock_key, 10, hostname)
+                    pipe.execute()
+                    is_leader = True
+            except redis.WatchError:
+                pass
+    else:
+        is_leader = True
+    return is_leader
+
+
 def drop_create_database() -> None:
     conn = psycopg2.connect(connection_strings["destination"]["dsn"])
     conn.autocommit = True
@@ -102,5 +130,8 @@ def sync_database() -> None:
 
 
 if __name__ == "__main__":
-    drop_create_database()
-    sync_database()
+    if is_leader(dbname=source_database):
+        drop_create_database()
+        sync_database()
+    else:
+        logging.warning(msg="Leader Election Failed, Skipping", extra={"database": source_database})
