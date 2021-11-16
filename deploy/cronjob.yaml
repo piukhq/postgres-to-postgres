@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-to-postgres
+spec:
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: 1
+  schedule: "0 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          annotations:
+            kubectl.kubernetes.io/default-container: app
+        spec:
+          containers:
+          - name: app
+            image: ghcr.io/binkhq/postgres-to-postgres:latest
+            imagePullPolicy: Always
+            env:
+            - name: source_psql_connection_string
+            - name: destination_psql_connection_string
+          restartPolicy: Never
