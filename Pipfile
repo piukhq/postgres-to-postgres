@@ -1,0 +1,18 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pydantic = "*"
+psycopg2-binary = "*"
+python-json-logger = "*"
+
+[dev-packages]
+black = "==21.10b0"
+flake8 = "*"
+ptpython = "*"
+isort = "*"
+
+[requires]
+python_version = "3.9"
