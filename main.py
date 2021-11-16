@@ -70,7 +70,7 @@ def _convert_urls_to_dsns() -> dict:
 
 connection_strings = _convert_urls_to_dsns()
 source_database = connection_strings["source"]["dbname"]
-logging_extras = ({"database": source_database},)
+logging_extras = {"database": source_database}
 
 
 def is_leader(dbname) -> bool:
