@@ -24,8 +24,8 @@ class Settings(BaseSettings):
     shell_check: bool = False
     leader_election_enabled: bool = False
     redis_url: Optional[str]
-    extra_dump_args: Optional[str]
-    extra_restore_args: Optional[str]
+    extra_dump_args: str = ""
+    extra_restore_args: str = ""
 
 
 settings = Settings()
