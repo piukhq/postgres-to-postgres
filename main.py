@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     shell_check: bool = False
     leader_election_enabled: bool = False
     redis_url: Optional[str]
+    extra_dump_args: Optional[str]
+    extra_restore_args: Optional[str]
 
 
 settings = Settings()
@@ -114,12 +116,15 @@ def sync_database() -> None:
     source_dsn = connection_strings["source"]["dsn"]
     destination_dsn = connection_strings["destination"]["dsn"]
     destination_database = destination_dsn.replace("dbname=postgres", f"dbname={source_database}")
+    pg_dump_command = f"pg_dump {settings.extra_dump_args} --format=custom '{source_dsn}'"
+    pg_restore_command = f"pg_restore {settings.extra_restore_args} --no-owner --dbname='{destination_database}'"
+    command = f"{pg_dump_command} | {pg_restore_command}"
     logging.warning(
         msg="Sync Start",
         extra=logging_extras,
     )
     subprocess.run(
-        f"pg_dump --no-privileges --format=custom '{source_dsn}' | pg_restore --dbname='{destination_database}'",
+        command,
         shell=True,
         check=settings.shell_check,
     )
