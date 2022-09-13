@@ -19,6 +19,8 @@ spec:
             image: ghcr.io/binkhq/postgres-to-postgres:latest
             imagePullPolicy: Always
             env:
-            - name: source_psql_connection_string
-            - name: destination_psql_connection_string
+            - name: source_database_dsn
+            - name: source_database_name
+            - name: destination_database_dsn
+            - name: destination_database_name
           restartPolicy: Never

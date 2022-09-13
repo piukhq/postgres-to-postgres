@@ -4,11 +4,11 @@ Copies a Postgres Database to another Postgres Server.
 
 # Things I don't like about this project
 
-## What on earth is `_convert_urls_to_dsns()`?
+## Database Connection Strings
 
-One use case of this tool is to move databases between "Azure Database for PostgreSQL Single Server" and "Azure Database for PostgreSQL Flexible Server". Flexible Server itself uses correctly formatted usernames, while Single Server does not. To have decent compatibility in both directions I decided to write this horrible hack.
+Both `source_database_dsn` and `destination_database_dsn` require values where the database name is set to `{}` for example: `postgresql://username:password@someserver:5432/{}?sslmode=require`, we then use `source_database_name` and `destination_database_name` to set the actual database name. We do this to simplify the way we inject environment variables into a Kubernetes Cluster.
 
-Once we have stopped using "Azure Database for PostgreSQL Single Server" I'll remove this hack.
+My intention is to come back to this and improve it, eventually.
 
 ## Why no retry logic?
 

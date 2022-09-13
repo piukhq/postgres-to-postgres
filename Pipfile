@@ -10,10 +10,10 @@ python-json-logger = "*"
 redis = "*"
 
 [dev-packages]
-black = "==21.10b0"
+black = "*"
 flake8 = "*"
 ptpython = "*"
 isort = "*"
 
 [requires]
-python_version = "3.9"
+python_version = "3.10"
